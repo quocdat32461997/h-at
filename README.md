@@ -4,7 +4,6 @@ Information Extraction App - Spring 2021 NLP
 ## Stucture
 - ml.py
 - nlp.py
-class NLP:
 	def __init__
 
 	def _helper_1
