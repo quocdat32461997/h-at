@@ -1,6 +1,7 @@
 # import dependencies
 import os
 import spacy
+from nltk.corpus import wordnet
 
 class NLP(object):
     """
@@ -31,12 +32,17 @@ class NLP(object):
         tag = []
         dep = []
         lem = []
+        hypernyms, hyponems, meronyms, holonyms = [], [], [], []
         for sent in input:
             # add placeholder for each sentence
             pos.append([])
             tag.append([])
             dep.append([])
             lem.append({'dep': None, 'head_text': None, 'head_pos': None, 'children': []})
+            hypernyms.append([])
+            hyponyms.append([])
+            meronyms.append([])
+            holonyms.append([])
             
             # get doc with features
             doc = self._nlp(text)
@@ -45,7 +51,7 @@ class NLP(object):
             for tok in doc:
                 pos[-1].append(tok.pos_) # pos
                 tag[-1].append(tok.tag_) # tag
-                dep[-1].appeend(tok.dep_)
+                dep[-1].appeend(tok.dep_) # dep
                 lem[-1].append(tok.lemma_) # lemma
 
                 # dependency
@@ -53,6 +59,16 @@ class NLP(object):
                 dep[-1]['head_text'] = tok.head.text
                 dep[-1]['head_pos'] = tok.head.pos_
                 dep[-1]['children'] = list(tok.children)
+
+                # wordnet features
+                hypernyms[-1].append(
+                        [x.hypernyms() for x in wordnet.synset(tok.text)])
+                hyponyms[-1].append(
+                        [x.hyponyms() for x in wordnet.synset(tok.text)])
+                meronyms[-1].append(
+                        [x.part_meronyms() for x in wordnet.synset(tok.text)])
+                holonyms[-1].append(
+                        [x.part_holonyms() for x in wordnet.synset(tok.text)])
 
         return {'lem': lem, 'pos': pos, 'tag': tag, 'dep': dep}
 
