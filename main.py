@@ -128,9 +128,9 @@ class IE(object):
         data = self._read_wiki_data(wiki_title_file)
 
         # extract NLP-based features
-        print("Extracting NLP Features")
+        print("Extracting NLP Features:\n------------------------")
         features = self._nlp_extract(data)
-        print("Done")
+        print("------------------------\nDone")
         print("Sentences: "+str(len(features[0])))
         print("Tokens: "+str(len(features[1])))
     

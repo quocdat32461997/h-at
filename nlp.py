@@ -85,12 +85,15 @@ class NLP(object):
         input_doc = self._nlp(input)
 
         # to sentences
+        print("Extracting Sentences")
         sents = [sent.text for sent in input_doc.sents]
 
         # to tokens
+        print("Extracting Tokens")
         tokens = [token.text for token in input_doc]
 
         # get pos, tags, lemmas, and dependency
+        print("Extracting Dependencies, POS, Lemmas, and WordNet Features")
         features = self._get_features(sents)
 
         return sents, tokens, features
