@@ -47,7 +47,7 @@ class IE(object):
         wiki_texts = []
         for title in wiki_titles:
             # Retrieve the wiki page
-            wiki = wikipedia.page(title)
+            wiki = wikipedia.page(title, auto_suggest=False)
             # Get the content (headers + paragraphs)
             text = wiki.content
             # Clean text by removing headers (surrounded by "==") and newlines
@@ -85,18 +85,19 @@ class IE(object):
                     wiki_titles.append(line.strip())
         return wiki_titles
 
-    def _read_data(self, input):
+    def _read_wiki_data(self, wiki_title_file):
         """
         Read data
         Args:
-            data : str or list of str
-                A single or list of paths to data
+            wiki_title_file : str
+                File path containing a line-separated list of Wikipedia article titles.
         Returns:
-            TBD
+            wiki_data : list of str
+                A list of the text corresponding (by list index) to the articles from the titles found in wiki_title_file.
         """
-        data = data if isinstance(data, list) else [data]
-        data = [open(file).read() for file in data]
-        return data
+        wiki_titles = self._read_wiki_titles(wiki_title_file)
+        wiki_data = self._scrape_wikipedia(wiki_titles)
+        return wiki_data
 
     def _extract_template(self, input):
         """
