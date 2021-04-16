@@ -32,7 +32,7 @@ class NLP(object):
         tag = []
         dep = []
         lem = []
-        hypernyms, hyponems, meronyms, holonyms = [], [], [], []
+        hypernyms, hyponyms, meronyms, holonyms = [], [], [], []
         for sent in input:
             # add placeholder for each sentence
             pos.append([])
@@ -45,30 +45,29 @@ class NLP(object):
             holonyms.append([])
             
             # get doc with features
-            doc = self._nlp(text)
+            doc = self._nlp(sent)
             
             # parse features
             for tok in doc:
                 pos[-1].append(tok.pos_) # pos
                 tag[-1].append(tok.tag_) # tag
-                dep[-1].appeend(tok.dep_) # dep
-                lem[-1].append(tok.lemma_) # lemma
+                dep[-1].append(tok.dep_) # dep
 
-                # dependency
-                dep[-1]['dep'] = tok.dep_
-                dep[-1]['head_text'] = tok.head.text
-                dep[-1]['head_pos'] = tok.head.pos_
-                dep[-1]['children'] = list(tok.children)
+                # lemma
+                lem[-1]['dep'] = tok.dep_
+                lem[-1]['head_text'] = tok.head.text
+                lem[-1]['head_pos'] = tok.head.pos_
+                lem[-1]['children'] = list(tok.children)
 
                 # wordnet features
                 hypernyms[-1].append(
-                        [x.hypernyms() for x in wordnet.synset(tok.text)])
+                        [x.hypernyms() for x in wordnet.synsets(tok.text)])
                 hyponyms[-1].append(
-                        [x.hyponyms() for x in wordnet.synset(tok.text)])
+                        [x.hyponyms() for x in wordnet.synsets(tok.text)])
                 meronyms[-1].append(
-                        [x.part_meronyms() for x in wordnet.synset(tok.text)])
+                        [x.part_meronyms() for x in wordnet.synsets(tok.text)])
                 holonyms[-1].append(
-                        [x.part_holonyms() for x in wordnet.synset(tok.text)])
+                        [x.part_holonyms() for x in wordnet.synsets(tok.text)])
 
         return {'lem': lem, 'pos': pos, 'tag': tag, 'dep': dep}
 
