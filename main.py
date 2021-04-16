@@ -2,6 +2,7 @@
 import sys
 import os
 import argparse
+from tqdm import tqdm
 
 # For scraping Wikipedia articles for data
 import wikipedia
@@ -48,7 +49,8 @@ class IE(object):
                 A list of the text corresponding (by list index) to the articles from wiki_titles
         """
         wiki_texts = []
-        for title in wiki_titles:
+        for i in tqdm(range(len(wiki_titles)), dynamic_ncols=True):
+            title = wiki_titles[i]
             # Retrieve the wiki page
             wiki = wikipedia.page(title, auto_suggest=False)
             # Get the content (headers + paragraphs)

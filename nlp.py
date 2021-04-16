@@ -2,6 +2,7 @@
 import os
 import spacy
 from nltk.corpus import wordnet
+from tqdm import tqdm
 
 class NLP(object):
     """
@@ -33,7 +34,8 @@ class NLP(object):
         dep = []
         lem = []
         hypernyms, hyponyms, meronyms, holonyms = [], [], [], []
-        for sent in input:
+        for i in tqdm(range(len(input)), dynamic_ncols=True):
+            sent = input[i]
             # add placeholder for each sentence
             pos.append([])
             tag.append([])
