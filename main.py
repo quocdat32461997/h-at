@@ -146,9 +146,19 @@ def get_args():
     parser = DefaultHelpParser('Argument Paser for h-at, an Information Extraction tool')
 
     # add arguments
-    parser.add_argument('--input', type = str, help = 'Text input')
+    required_args = parser.add_argument_group('required arguments')
+    required_args.add_argument('-w', '--wiki',
+                        metavar='<path>',
+                        required=True,
+                        help='Input file of line-separated titles to Wikipedia articles (not URLs) to scrape as input data.')
+    args = parser.parse_args()
 
-    return parser.parse_args()
+    # validate input file
+    if not os.path.isfile(args.wiki):
+        print("error: \""+args.wiki+"\" does not exist")
+        quit()
+
+    return args
 
 def main(args):
     return None
