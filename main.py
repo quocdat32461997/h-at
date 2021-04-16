@@ -163,7 +163,8 @@ def get_args():
     return args
 
 def main(args):
-    return None
+    my_ie = IE()
+    my_ie.extract(args.wiki)
 
 if __name__ == '__main__':
     # get args
