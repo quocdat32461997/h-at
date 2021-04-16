@@ -20,18 +20,20 @@ class IE(object):
         Args:
             kwargs : dict
         """
-        pass
+        self._nlp = NLP()
 
-    def _nlp(self, input):
+    def _nlp_extract(self, input):
         """
         Run NLP pipelin to extract NLP-based features
         Args:
-            input : list of str
+            input : str
+                Giant str of input data
         Returns:
-            output : TBD
+            output : tuple of (list of str, list of str, dict)
+                Tuple with 3 items: a list of sentences, a list of tokens, and a dict of features
         """
 
-        output = None
+        output = self._nlp.extract(input)
         return output
         
     def _scrape_wikipedia(self, wiki_titles):
@@ -111,25 +113,25 @@ class IE(object):
         output = None
         return output
 
-    def extract(self, input):
+    def extract(self, wiki_title_file):
         """
         Extract info from text doc
         Args:
-            input : str or list of str
-                A single or multiple paths to data
+            input_file : str
+                A single path to a file with Wikipedia article titles
         Returns:
             output : TBD
         """
         # read data
-        output = self._read_data(input)
+        data = self._read_wiki_data(wiki_title_file)
 
         # extract NLP-based features
-        output = self._nlp(output)
+        features = self._nlp_extract(data)
     
         # extract templates
-        output = self._extract_template(output)
+        templates = self._extract_template(features)
 
-        return output
+        return features, templates
 
 class DefaultHelpParser(argparse.ArgumentParser):
     """
