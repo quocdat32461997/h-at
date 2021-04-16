@@ -99,7 +99,9 @@ class IE(object):
                 A list of the text corresponding (by list index) to the articles from the titles found in wiki_title_file.
         """
         wiki_titles = self._read_wiki_titles(wiki_title_file)
+        print("Scraping Wikipedia Articles: "+str(wiki_titles))
         wiki_data = self._scrape_wikipedia(wiki_titles)
+        print("Done")
         return ' '.join(wiki_data)
 
     def _extract_template(self, input):
@@ -126,7 +128,11 @@ class IE(object):
         data = self._read_wiki_data(wiki_title_file)
 
         # extract NLP-based features
+        print("Extracting NLP Features")
         features = self._nlp_extract(data)
+        print("Done")
+        print("Sentences: "+str(len(features[0])))
+        print("Tokens: "+str(len(features[1])))
     
         # extract templates
         templates = self._extract_template(features)
@@ -163,8 +169,11 @@ def get_args():
     return args
 
 def main(args):
+    print("\nH-AT: A Deep NLP Pipeline for Information Extraction\n====================================================")
+    print("Input Wikipedia File: "+args.wiki)
     my_ie = IE()
     my_ie.extract(args.wiki)
+    print("====================================================\nFinished")
 
 if __name__ == '__main__':
     # get args
