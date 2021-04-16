@@ -2,6 +2,10 @@
 import os
 import argparse
 
+# For scraping Wikipedia articles for data
+import wikipedia
+import re
+
 from nlp import NLP
 from ml import ML
 
@@ -28,6 +32,30 @@ class IE(object):
 
         output = None
         return output
+        
+    def _scrape_wikipedia(self, wiki_titles):
+        """
+        Scrape text from Wikipedia articles
+        Args:
+            wiki_titles : list of str
+                A list of plain titles (not urls) to Wikipedia articles
+                Ex: ["Alan Turing", "NASA"]
+        Returns:
+            wiki_texts : list of strs
+                A list of the text corresponding (by list index) to the articles from wiki_titles
+        """
+        wiki_texts = []
+        for title in wiki_titles:
+            # Retrieve the wiki page
+            wiki = wikipedia.page(title)
+            # Get the content (headers + paragraphs)
+            text = wiki.content
+            # Clean text by removing headers (surrounded by "==") and newlines
+            text = re.sub(r'==.*?==+', '', text)
+            text = text.replace('\n', ' ')
+            
+            wiki_texts.append(text)
+        return wiki_texts
 
     def _read_data(self, input):
         """
