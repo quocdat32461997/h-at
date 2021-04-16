@@ -128,6 +128,7 @@ class IE(object):
         """
         # read data
         data = self._read_wiki_data(wiki_title_file)
+        print("Total Data: "+str(len(data.encode('utf-8')))+" bytes")
 
         # extract NLP-based features
         print("Extracting NLP Features:\n------------------------")

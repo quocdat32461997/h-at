@@ -1,8 +1,20 @@
 # Organizations
 University of Texas at Dallas
+NASA
+American Red Cross
+CERN
+Boston Dynamics
 
 # Persons
 Alan Turing
+Albert Einstein
+Bill Gates
+Stephen Hawking
+Spider-Man
 
 # Locations
 Dallas
+Rocky Mountains
+Europe
+Asia
+Area 51
