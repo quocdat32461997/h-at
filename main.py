@@ -56,6 +56,34 @@ class IE(object):
             
             wiki_texts.append(text)
         return wiki_texts
+        
+    def _read_wiki_titles(self, input_file):
+        """
+        Retrieve list of line-separated Wikipedia article titles from a file.
+        Empty lines and lines starting with "#" are ignored.
+        Article title validation is not performed.
+        Ex:
+            File:
+                # Persons
+                Alan Turing
+                
+                Albert Einstein
+            Output: ["Alan Turing", "Albert Einstein"]
+        Args:
+            input_file : str
+                File path containing a line-separated list of Wikipedia article titles.
+        Returns:
+            wiki_titles : list of str
+                A list of the Wikipedia article titles retrieved from input_file
+        """
+        wiki_titles = []
+        # Iterate through lines in file
+        with open(input_file) as in_file:
+            for line in in_file:
+                # Check if not empty and not whitespace and doesn't start with "#"
+                if line and (not line.isspace()) and (not line.strip().startswith('#')):
+                    wiki_titles.append(line.strip())
+        return wiki_titles
 
     def _read_data(self, input):
         """
