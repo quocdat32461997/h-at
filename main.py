@@ -1,4 +1,5 @@
 # import dependencies
+import sys
 import os
 import argparse
 
@@ -130,9 +131,19 @@ class IE(object):
 
         return output
 
+class DefaultHelpParser(argparse.ArgumentParser):
+    """
+    DefaultHelpParser: ArgumentParser used by get_args() instead of the default ArgumentParser.
+    This ArgumentParser prints the -h/--help and exits whenever there's an error.
+    """
+    def error(self, message):
+        sys.stderr.write('error: %s\n' % message)
+        self.print_help()
+        sys.exit(2)
+
 def get_args():
     #initialize argument parser
-    parser = argparse.ArgumentParser('Argument Paser for h-at, an Information Extraction tool')
+    parser = DefaultHelpParser('Argument Paser for h-at, an Information Extraction tool')
 
     # add arguments
     parser.add_argument('--input', type = str, help = 'Text input')
