@@ -83,11 +83,13 @@ class NLP(object):
             features: dict
                 Dictionary of extracted lemmas, pos, tags, and dependencies
         """
-        # to strings
-        sents = None
+        input_doc = self._nlp(input)
+
+        # to sentences
+        sents = [sent.text for sent in input_doc.sents]
 
         # to tokens
-        tokens = None
+        tokens = [token.text for token in input_doc]
 
         # get pos, tags, lemmas, and dependency
         features = self._get_features(sents)
