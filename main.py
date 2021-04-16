@@ -98,7 +98,7 @@ class IE(object):
         """
         wiki_titles = self._read_wiki_titles(wiki_title_file)
         wiki_data = self._scrape_wikipedia(wiki_titles)
-        return wiki_data
+        return ' '.join(wiki_data)
 
     def _extract_template(self, input):
         """
