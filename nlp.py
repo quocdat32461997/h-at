@@ -76,6 +76,15 @@ class NLP(object):
                         [x.part_holonyms() for x in wordnet.synsets(tok.text)])
 
         return lem, pos, tag, dep, ents, hypernyms, hyponyms, meronyms, holonyms
+   
+    def fill_born(self):
+        return None
+    
+    def fill_acquire(self):
+        return None
+    
+    def fill_part_of(self):
+        return None
 
     def fill(self, input):
         """
@@ -86,8 +95,14 @@ class NLP(object):
             output : list
                 A list of filled templates
         """
-
-        return input
+        for sents, tokens, features in inputs:
+            # BORN template
+            
+            # ACQUIRE template
+            
+            # PART-OF template
+            
+        return borns, acquires, part_ofs
 
     def extract(self, input):
         """
