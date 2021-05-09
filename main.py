@@ -4,10 +4,6 @@ import os
 import argparse
 from tqdm import tqdm
 
-# For scraping Wikipedia articles for data
-import wikipedia
-import re
-
 from nlp import NLP
 from ml import ML
 
@@ -37,77 +33,34 @@ class IE(object):
                 Tuple with 3 items: a list of sentences, a list of tokens, and a dict of features
         """
 
-        print('\nExtracting NLP features for article, {}'.format(title))
-        return self._nlp.extract(input)
-        
-    def _scrape_wikipedia(self, wiki_titles):
-        """
-        Scrape text from Wikipedia articles
-        Args:
-            wiki_titles : list of str
-                A list of plain titles (not urls) to Wikipedia articles
-                Ex: ["Alan Turing", "NASA"]
-        Returns:
-            wiki_texts : list of strs
-                A list of the text corresponding (by list index) to the articles from wiki_titles
-        """
-        wiki_texts = []
-        for i in tqdm(range(len(wiki_titles)), dynamic_ncols=True):
-            title = wiki_titles[i]
-            # Retrieve the wiki page
-            wiki = wikipedia.page(title, auto_suggest=False)
-            # Get the content (headers + paragraphs)
-            text = wiki.content
-            # Clean text by removing headers (surrounded by "==") and newlines
-            text = re.sub(r'==.*?==+', '', text)
-            text = text.replace('\n', ' ')
-            
-            wiki_texts.append(text)
-        return wiki_texts
-        
-    def _read_wiki_titles(self, input_file):
-        """
-        Retrieve list of line-separated Wikipedia article titles from a file.
-        Empty lines and lines starting with "#" are ignored.
-        Article title validation is not performed.
-        Ex:
-            File:
-                # Persons
-                Alan Turing
-                
-                Albert Einstein
-            Output: ["Alan Turing", "Albert Einstein"]
-        Args:
-            input_file : str
-                File path containing a line-separated list of Wikipedia article titles.
-        Returns:
-            wiki_titles : list of str
-                A list of the Wikipedia article titles retrieved from input_file
-        """
-        wiki_titles = []
-        # Iterate through lines in file
-        with open(input_file) as in_file:
-            for line in in_file:
-                # Check if not empty and not whitespace and doesn't start with "#"
-                if line and (not line.isspace()) and (not line.strip().startswith('#')):
-                    wiki_titles.append(line.strip())
-        return wiki_titles
+        outputs = []
+        for input, title in zip(inputs, titles):
+            print('\nExtracting NLP features for article, {}'.format(title))
+            outputs.append(self._nlp.extract(input))
 
-    def _read_wiki_data(self, wiki_title_file):
+        return outputs
+
+    def _read_wiki_data(self, wiki_file_dir):
+>>>>>>> aec62c69135142015c8edb9bd804fbedc6b6b879
         """
         Read data
         Args:
-            wiki_title_file : str
-                File path containing a line-separated list of Wikipedia article titles.
+            wiki_file_dir : str
+                Directory path containing Wikipedia articles as .txt files.
         Returns:
             wiki_data : list of str
-                A list of the text corresponding (by list index) to the articles from the titles found in wiki_title_file.
+                A list of the text corresponding (by list index) to the articles from the titles found in wiki_file_dir.
             wiki_titles : list of str
-                A list of article titles
+                A list of the article file names
         """
-        wiki_titles = self._read_wiki_titles(wiki_title_file)
-        print("Scraping Wikipedia Articles: "+str(wiki_titles))
-        wiki_data = self._scrape_wikipedia(wiki_titles)
+        wiki_titles = []
+        wiki_data = []
+        for file in os.listdir(wiki_file_dir):
+            if os.path.isfile(os.path.join(wiki_file_dir, file)):
+                wiki_titles.append(file)
+                with open(os.path.join(wiki_file_dir, file), encoding='latin-1') as wiki_file:
+                    wiki_data.append("".join(line.rstrip() for line in wiki_file))
+        print("Found Wikipedia Articles/Files: "+str(wiki_titles))
         print("Done")
         return wiki_data, wiki_titles
 
@@ -130,18 +83,18 @@ class IE(object):
         print('Extracting templates for article, {}'.format(title))
         return self._nlp.fill(sents, features)
 
-    def extract(self, wiki_title_file):
+    def extract(self, wiki_file_dir):
         """
         Extract info from text doc
         Args:
-            input_file : str
-                A single path to a file with Wikipedia article titles
+            wiki_file_dir : str
+                A single path to a directory with Wikipedia articles as .txt files.
         Returns:
             outputs : list
                 A list of templates per article
         """
         # read data
-        data, titles = self._read_wiki_data(wiki_title_file)
+        data, titles = self._read_wiki_data(wiki_file_dir)
         print("Total Data: "+str(sum([len(d.encode('utf-8')) for d in data]))+" bytes")
 
         # extract NLP-based features and file templates
@@ -176,11 +129,11 @@ def get_args():
     required_args.add_argument('-w', '--wiki',
                         metavar='<path>',
                         required=True,
-                        help='Input file of line-separated titles to Wikipedia articles (not URLs) to scrape as input data.')
+                        help='Input path of directory to Wikipedia articles (.txt files) to read and analyze.')
     args = parser.parse_args()
 
     # validate input file
-    if not os.path.isfile(args.wiki):
+    if not os.path.isdir(args.wiki):
         print("error: \""+args.wiki+"\" does not exist")
         quit()
 
@@ -188,7 +141,7 @@ def get_args():
 
 def main(args):
     print("\nH-AT: A Deep NLP Pipeline for Information Extraction\n====================================================")
-    print("Input Wikipedia File: "+args.wiki)
+    print("Input Wikipedia File Directory: "+args.wiki)
     my_ie = IE()
     my_ie.extract(args.wiki)
     print("====================================================\nFinished")
