@@ -33,15 +33,10 @@ class IE(object):
                 Tuple with 3 items: a list of sentences, a list of tokens, and a dict of features
         """
 
-        outputs = []
-        for input, title in zip(inputs, titles):
-            print('\nExtracting NLP features for article, {}'.format(title))
-            outputs.append(self._nlp.extract(input))
-
-        return outputs
+        print('\nExtracting NLP features for article, {}'.format(title))
+        return self._nlp.extract(input)
 
     def _read_wiki_data(self, wiki_file_dir):
->>>>>>> aec62c69135142015c8edb9bd804fbedc6b6b879
         """
         Read data
         Args:
