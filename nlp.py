@@ -4,6 +4,7 @@ import spacy
 from nltk.corpus import wordnet
 from tqdm import tqdm
 import neuralcoref
+from collections import defaultdict
 
 class NLP(object):
     """
@@ -75,34 +76,51 @@ class NLP(object):
                 holonyms[-1].append(
                         [x.part_holonyms() for x in wordnet.synsets(tok.text)])
 
-        return lem, pos, tag, dep, ents, hypernyms, hyponyms, meronyms, holonyms
+        return {'lem' : lem,
+                'pos' : pos, 
+                'tag' : tag, 
+                'dep' : dep, 
+                'ents' : ents, 
+                'hypernyms' : hypernyms, 
+                'hyponyms' : hyponyms,
+                'meronyms' : meronyms, 
+                'holonyms' : holonyms}
    
-    def fill_born(self):
+    def fill_born(self, sents, features):
         return None
     
-    def fill_acquire(self):
+    def fill_acquire(self, sents, features):
+        res = []
+        for x in features['ents']:
+            print(x)
+            
         return None
     
     def fill_part_of(self):
         return None
 
-    def fill(self, input):
+    def fill(self, sents, features):
         """
-        Fill templates of BORN, ACQUIRE, and PART_OF
+        Fill templates of BORN, ACQUIRE, and PART_OF pert article
         Args:
-            input : str
+            sents : list of str
+                A list of str per article
+            features : dict
+                Dictionary of features
         Returns:
             output : list
                 A list of filled templates
         """
-        for sents, tokens, features in inputs:
-            # BORN template
+        templates = defaultdict(list)
+        # BORN template
+        templates['BORN'] = self.fill_born(sents, features)
             
-            # ACQUIRE template
+        # ACQUIRE template
+        templates['ACQUIRE'] = self.fill_acquire(sents, features)
             
-            # PART-OF template
+        # PART-OF template
             
-        return borns, acquires, part_ofs
+        return templates
 
     def extract(self, input):
         """
@@ -127,7 +145,7 @@ class NLP(object):
         tokens = [token.text for token in input_doc]
 
         # get pos, tags, lemmas, and dependency
-        lem, pos, tag, dep, ents, hypernyms, hyponyms, meronyms, holonyms = self._get_features(sents)
+        features = self._get_features(sents)
+        features['corefs'] = corefs
 
-        return sents, tokens,\
-                {'lem' : lem, 'pos' : pos, 'tag' : tag, 'dep' : dep, 'ents' : ents, 'corefs' : corefs}
+        return sents, tokens, features

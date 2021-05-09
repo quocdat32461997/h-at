@@ -23,26 +23,22 @@ class IE(object):
         """
         self._nlp = NLP()
 
-    def _nlp_extract(self, inputs, titles):
+    def _nlp_extract(self, input, title):
         """
         Run NLP pipeline to extract NLP-based features
         Args:
-            inputs : list of str
-                List of input data
-            titles : list of str
-                List of input tiles
+            input : str
+                Input data
+            title : str
+                Input tile
                 
         Returns:
-            outputs : list of tuples of (list of str, list of str, dict)
+            output : Tuples of (list of str, list of str, dict)
                 Tuple with 3 items: a list of sentences, a list of tokens, and a dict of features
         """
 
-        outputs = []
-        for input, title in zip(inputs, titles):
-            print('\nExtracting NLP features for article, {}'.format(title))
-            outputs.append(self._nlp.extract(input))
-
-        return outputs
+        print('\nExtracting NLP features for article, {}'.format(title))
+        return self._nlp.extract(input)
         
     def _scrape_wikipedia(self, wiki_titles):
         """
@@ -115,21 +111,24 @@ class IE(object):
         print("Done")
         return wiki_data, wiki_titles
 
-    def _extract_template(self, inputs, titles):
+    def _extract_template(self, sents, tokens, features, title):
         """
         Extract information following templates
         Args:
-            inputs : list
-                A list of NLP features
+            sents : list
+                A list of sentences in an article
+            tokens : nested-list
+                A list of list of tokens per article
+            features : dict
+                Dictionary of features
+            title : str
+                Article titlle
         Returns:
-            outputs : TBD
+            outputs : list
+                A list of all possible templates
         """
-        outputs = []
-        for input, title in zip(inputs, titles):
-            print('Extracting templates for article, {}'.format(title))
-            outputs.append(self._nlp.fill(input))
-
-        return outputs
+        print('Extracting templates for article, {}'.format(title))
+        return self._nlp.fill(sents, features)
 
     def extract(self, wiki_title_file):
         """
@@ -138,24 +137,25 @@ class IE(object):
             input_file : str
                 A single path to a file with Wikipedia article titles
         Returns:
-            output : TBD
+            outputs : list
+                A list of templates per article
         """
         # read data
         data, titles = self._read_wiki_data(wiki_title_file)
         print("Total Data: "+str(sum([len(d.encode('utf-8')) for d in data]))+" bytes")
 
-        # extract NLP-based features
-        print("Extracting NLP Features:\n------------------------")
-        features = self._nlp_extract(data, titles)
-        print("------------------------\nDone")
-        #print("Sentences: "+str(len(features[0])))
-        #print("Tokens: "+str(len(features[1])))
-    
-        # extract templates
-        print("Extracting templates")
-        templates = self._extract_template(features, titles)
+        # extract NLP-based features and file templates
+        outputs = []
+        for text, title in zip(data, titles):
+            print("Extracting NLP Features:\n------------------------")
+            sents, tokens, features = self._nlp_extract(text, title)
+            
+            print("Extracting templates:\n------------------------")
+            outputs.append(self._extract_template(sents, tokens, features, title))
 
-        return features, templates
+        print("------------------------\nDone")
+    
+        return outputs
 
 class DefaultHelpParser(argparse.ArgumentParser):
     """
