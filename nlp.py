@@ -286,12 +286,24 @@ class NLP(object):
 
                 # get locations
                 if len(locs) >= 2:
-                    res.append((locs[0], locs[1]))
+                    res.append({
+                        'template' : 'PART_OF',
+                        'sentences' : sents[i],
+                        'arguments' : {
+                            '1' : locs[0], 
+                            '2' : locs[1]
+                            }})
                     continue
                 
                 # get organizations
                 if len(orgs) >= 1:
-                    res.append((orgs[0], orgs[1]))
+                    res.append({
+                        'template' : 'PART_OF',
+                        'sentences' : setns[i],
+                        'arguments' : {
+                            '1' : orgs[0], 
+                            '2' : orgs[1]
+                        }})
                     continue
             except:
                 pass
