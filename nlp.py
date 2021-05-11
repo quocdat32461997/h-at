@@ -120,19 +120,14 @@ class NLP(object):
                 
                 # 2. Search for the parse tree node with i = index, the index of the 'bear' lemma previously found
                 born_token = _find_token_i_in_parse_tree(root, index)
-                print("sent: "+str(sents[i]))
-                print("ents: "+str(ents))
-                print("dep: "+str(dep)+"\n")
                 
                 # 3. Analyze the parents and children of the born node to fill in the BORN template
                 bornee, loc, date = None, None, None
                 # 3a. Find the person or org being born
                 for child in born_token.children:
                     #if child.dep_ == 'nsubjpass' or child.dep_ == 'nsubj':    # Found the thing being born
-                    print("child: "+str(child.text)+", ent: "+str(child.ent_type_))
                     if child.ent_type_ == 'PERSON' or child.ent_type_ == 'ORG':   # The thing is a PERSON or ORG
                         bornee = child.text
-                        print("bornee: " + bornee)
                         break
                 # 3b. Find their born date
                 if bornee is not None:  # Once a bornee is found, look for their born location and date
@@ -140,7 +135,6 @@ class NLP(object):
                         # Look for the preposition of the born location and date
                         if child.dep_ == 'prep':
                             for grandchild in child.children:
-                                print("grandchild: "+str(grandchild.text)+", ent: "+str(grandchild.ent_type_))
                                 if grandchild.ent_type_ == 'DATE' and date is None:
                                     # Found the preposition date
                                     date = grandchild.text
