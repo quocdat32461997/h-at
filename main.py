@@ -96,10 +96,16 @@ class IE(object):
         # extract NLP-based features and file templates
         outputs = []
         for text, title in zip(data, titles):
-            if not title in ['IBM.txt', 'ElonMusk.txt']:
-                continue
             print("\nExtracting NLP Features:\n------------------------")
             sents, tokens, features = self._nlp_extract(text, title)
+
+            #print('Entities in document, {}'.format(title))
+            #print(features['ents'])
+            #input()
+
+            #print('Dependency parsing in document, {}'.format(title))
+            #print(features['dep'])
+            #input()
             
             print("Extracting templates:\n------------------------")
             outputs.append(self._extract_template(sents, tokens, features, title))
