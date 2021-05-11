@@ -79,7 +79,7 @@ class NLP(object):
                 'holonyms' : holonyms}
    
     def fill_born(self, sents, features):
-        return None
+        return []
     
     def fill_acquire(self, sents, features):
         res = []
@@ -121,19 +121,32 @@ class NLP(object):
                     buyer = 'None'
                 
                 # get sellers
+                temp = []
                 if len(dates) == 1:
-                    res.append((buyer, orgs.pop(0), dates[-1]))
+                    temp.append((buyer, orgs.pop(0), dates[-1]))
                 else:
                     while dates and orgs:
-                        res.append((buyer, orgs.pop(0), dates.pop(0)))
+                        temp.append((buyer, orgs.pop(0), dates.pop(0)))
+
+                # add results
+                while temp:
+                    x = temp.pop()
+                    res.append({
+                        'template' : 'BUY',
+                        'sentences' : sents[i],
+                        'arguments' : {
+                            '1' : x[0],
+                            '2' : x[1],
+                            '3' : x[2]}})
             except:
                 pass
+        print(res)
         return res
     
     def fill_part_of(self, sents, features):
-        return None
+        return []
 
-    def fill(self, sents, features):
+    def fill(self, title, sents, features):
         """
         Fill templates of BORN, ACQUIRE, and PART_OF pert article
         Args:
@@ -146,15 +159,16 @@ class NLP(object):
                 A list of filled templates
         """
         templates = defaultdict(list)
+        templates = {'document' : title,
+                'extractions' : []}
         # BORN template
-        templates['BORN'] = self.fill_born(sents, features)
+        templates['extractions'].extend(self.fill_born(sents, features))
             
         # ACQUIRE template
-        templates['ACQUIRE'] = self.fill_acquire(sents, features)
-        print("Acquire Template: " + str(templates['ACQUIRE']))
+        templates['extractions'].extend(self.fill_acquire(sents, features))
             
         # PART-OF template
-        templates['PART_OF'] = self.fill_part_of(sents, features)
+        templates['extractions'].extend(self.fill_part_of(sents, features))
             
         return templates
 

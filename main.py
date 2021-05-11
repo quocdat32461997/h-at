@@ -76,7 +76,7 @@ class IE(object):
                 A list of all possible templates
         """
         print('Extracting templates for article, {}'.format(title))
-        return self._nlp.fill(sents, features)
+        return self._nlp.fill(title, sents, features)
 
     def extract(self, wiki_file_dir):
         """
@@ -95,6 +95,8 @@ class IE(object):
         # extract NLP-based features and file templates
         outputs = []
         for text, title in zip(data, titles):
+            if not title == 'IBM.txt':
+                continue
             print("\nExtracting NLP Features:\n------------------------")
             sents, tokens, features = self._nlp_extract(text, title)
             
