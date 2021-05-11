@@ -238,7 +238,46 @@ class NLP(object):
         return res
     
     def fill_part_of(self, sents, features):
-        return None
+        res = []
+        for i, lemmas, ents, dep in zip(range(len(sents)), features['lem'], features['ents'], features['dep']):
+
+            # in sentence
+            try:
+                # find index of acquire in lemmas
+                index = lemmas.index('in') or lemmas.index('be') or lemmas.index('part')
+
+                # parse entities
+                def _parse_ents(inputs):
+                    """
+                    Parse entities into ORGs and PLACES
+                    """
+                    locs, orgs = [], []
+                    for ent in inputs:
+                        if ent[-1] == 'LOC' or ent[-1] == 'GPE':  # LOC: Non-GPE locations, mountain ranges, bodies of water.; GPE: Countries, cities, states.
+                            locs.append(ent[0])
+                        elif ent[-1] == 'ORG':
+                            orgs.append(ent[0])
+                    return locs, orgs
+
+                locs, orgs = _parse_ents(ents)
+
+                # get all possible ACQUIRE templates
+                if len(locs) < 2 and len(orgs) < 2:
+                    # find no entites
+                    continue
+
+                # get locations
+                if len(locs) >= 2:
+                    res.append((locs[0], locs[1]))
+                    continue
+                
+                # get organizations
+                if len(orgs) >= 1:
+                    res.append((orgs[0], orgs[1]))
+                    continue
+            except:
+                pass
+        return res
 
     def fill(self, sents, features):
         """
@@ -263,6 +302,7 @@ class NLP(object):
             
         # PART-OF template
         templates['PART_OF'] = self.fill_part_of(sents, features)
+        print("Part-Of Template: " + str(templates['PART_OF']))
             
         return templates
 
