@@ -2,6 +2,7 @@
 import sys
 import os
 import argparse
+import json
 from tqdm import tqdm
 
 from nlp import NLP
@@ -76,7 +77,7 @@ class IE(object):
                 A list of all possible templates
         """
         print('Extracting templates for article, {}'.format(title))
-        return self._nlp.fill(sents, features)
+        return self._nlp.fill(title, sents, features)
 
     def extract(self, wiki_file_dir):
         """
@@ -95,6 +96,8 @@ class IE(object):
         # extract NLP-based features and file templates
         outputs = []
         for text, title in zip(data, titles):
+            if not title in ['IBM.txt', 'ElonMusk.txt']:
+                continue
             print("\nExtracting NLP Features:\n------------------------")
             sents, tokens, features = self._nlp_extract(text, title)
             
@@ -138,8 +141,12 @@ def main(args):
     print("\nH-AT: A Deep NLP Pipeline for Information Extraction\n====================================================")
     print("Input Wikipedia File Directory: "+args.wiki)
     my_ie = IE()
-    my_ie.extract(args.wiki)
+    outputs = my_ie.extract(args.wiki)
     print("====================================================\nFinished")
+
+    print("Writing reults to output.json")
+    with open("output.json", "w") as file:
+        json.dump(outputs, file)
 
 if __name__ == '__main__':
     # get args

@@ -182,7 +182,13 @@ class NLP(object):
                 else:
                     date = 'None'
                 
-                res.append((bornee, loc, date))
+                res.append({
+                    'template' : 'BORN',
+                    'sentences' : sents[i],
+                    'arguments' : {
+                    '1' : bornee,
+                    '2' : loc, 
+                    '3' : date}})
             except Exception as e:
                 #print(e)
                 pass
@@ -221,18 +227,30 @@ class NLP(object):
                 if lemmas[dep.index('nsubj')] == orgs[0]:
                     # active
                     buyer = orgs.pop(0)
-                elif lemmas[dep.index('nsubjpass')] == orgs[-1]:
+                elif lemmas[dep.index('nsubjpass')] == orgs[0]:
                     # passive
                     buyer = orgs.pop()
                 else:
                     buyer = 'None'
                 
                 # get sellers
+                temp = []
                 if len(dates) == 1:
-                    res.append((buyer, orgs.pop(0), dates[-1]))
+                    temp.append((buyer, orgs.pop(0), dates[-1]))
                 else:
                     while dates and orgs:
-                        res.append((buyer, orgs.pop(0), dates.pop(0)))
+                        temp.append((buyer, orgs.pop(0), dates.pop(0)))
+
+                # add results
+                while temp:
+                    x = temp.pop()
+                    res.append({
+                        'template' : 'BUY',
+                        'sentences' : sents[i],
+                        'arguments' : {
+                            '1' : x[0],
+                            '2' : x[1],
+                            '3' : x[2]}})
             except:
                 pass
         return res
@@ -279,7 +297,7 @@ class NLP(object):
                 pass
         return res
 
-    def fill(self, sents, features):
+    def fill(self, title, sents, features):
         """
         Fill templates of BORN, ACQUIRE, and PART_OF pert article
         Args:
@@ -292,18 +310,18 @@ class NLP(object):
                 A list of filled templates
         """
         templates = defaultdict(list)
+        templates = {'document' : title,
+                'extractions' : []}
         # BORN template
-        templates['BORN'] = self.fill_born(sents, features)
-        print("Born Template: " + str(templates['BORN']))
+        templates['extractions'].extend(self.fill_born(sents, features))
             
         # ACQUIRE template
-        templates['ACQUIRE'] = self.fill_acquire(sents, features)
-        print("Acquire Template: " + str(templates['ACQUIRE']))
+        templates['extractions'].extend(self.fill_acquire(sents, features))
             
         # PART-OF template
-        templates['PART_OF'] = self.fill_part_of(sents, features)
-        print("Part-Of Template: " + str(templates['PART_OF']))
+        templates['extractions'].extend(self.fill_part_of(sents, features))
             
+        print(templates)
         return templates
 
     def extract(self, input):
