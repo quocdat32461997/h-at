@@ -227,7 +227,7 @@ class NLP(object):
                 if lemmas[dep.index('nsubj')] == orgs[0]:
                     # active
                     buyer = orgs.pop(0)
-                elif lemmas[dep.index('nsubjpass')] == orgs[-1]:
+                elif lemmas[dep.index('nsubjpass')] == orgs[0]:
                     # passive
                     buyer = orgs.pop()
                 else:

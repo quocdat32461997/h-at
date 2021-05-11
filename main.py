@@ -2,6 +2,7 @@
 import sys
 import os
 import argparse
+import json
 from tqdm import tqdm
 
 from nlp import NLP
@@ -140,8 +141,12 @@ def main(args):
     print("\nH-AT: A Deep NLP Pipeline for Information Extraction\n====================================================")
     print("Input Wikipedia File Directory: "+args.wiki)
     my_ie = IE()
-    my_ie.extract(args.wiki)
+    outputs = my_ie.extract(args.wiki)
     print("====================================================\nFinished")
+
+    print("Writing reults to output.json")
+    with open("output.json", "w") as file:
+        json.dump(outputs, file)
 
 if __name__ == '__main__':
     # get args
