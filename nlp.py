@@ -151,7 +151,7 @@ class NLP(object):
             
         # ACQUIRE template
         templates['ACQUIRE'] = self.fill_acquire(sents, features)
-        print(templates['ACQUIRE'])
+        print("Acquire Template: " + str(templates['ACQUIRE']))
             
         # PART-OF template
         templates['PART_OF'] = self.fill_part_of(sents, features)
