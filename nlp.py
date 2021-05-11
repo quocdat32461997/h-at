@@ -35,6 +35,7 @@ class NLP(object):
         pos = []
         tag = []
         dep = []
+        dep_root = []
         lem = []
         ents = []
         hypernyms, hyponyms, meronyms, holonyms = [], [], [], []
@@ -46,6 +47,7 @@ class NLP(object):
             pos.append([])
             tag.append([])
             dep.append([])
+            dep_root.append(list(doc.sents)[0].root) # dep_root
             lem.append([])
             ents.append([(ent.text, ent.label_) for ent in doc.ents])
             hypernyms.append([])
@@ -72,6 +74,7 @@ class NLP(object):
                 'pos' : pos, 
                 'tag' : tag, 
                 'dep' : dep, 
+                'dep_root' : dep_root,
                 'ents' : ents, 
                 'hypernyms' : hypernyms, 
                 'hyponyms' : hyponyms,
@@ -79,7 +82,111 @@ class NLP(object):
                 'holonyms' : holonyms}
    
     def fill_born(self, sents, features):
-        return None
+        res = []
+        for i, lemmas, ents, dep, root in zip(range(len(sents)), features['lem'], features['ents'], features['dep'], features['dep_root']):
+            # in sentence
+            try:
+                # 1. Find index of the born verb in sentence
+                index = lemmas.index('bear')    # Born is the past participle of the verb bear
+                
+                # parse entities
+                def _parse_ents(inputs):
+                    """
+                    Parse entities into ORGs and DATEs
+                    """
+                    bornees, dates, locs = [], [], []
+                    for ent in inputs:
+                        if ent[-1] == 'DATE':
+                            dates.append(ent[0])
+                        elif ent[-1] == 'PERSON' or ent[-1] == 'ORG':
+                            bornees.append(ent[0])
+                        elif ent[-1] == 'LOC' or ent[-1] == 'GPE':  # LOC: Non-GPE locations, mountain ranges, bodies of water.; GPE: Countries, cities, states.
+                            locs.append(ent[0])
+                        
+                    return bornees, dates, locs
+                
+                def _find_token_i_in_parse_tree(root, search_i):
+                    """
+                    Recursive tree search for value search_i == attribute i of the nodes.
+                    """
+                    if root is None or root.i == search_i:
+                        return root
+                    else:
+                        for child in root.children:
+                            node = _find_token_i_in_parse_tree(child, search_i)
+                            if node is not None and node.i == search_i:
+                                return child
+                        return None
+                
+                # 2. Search for the parse tree node with i = index, the index of the 'bear' lemma previously found
+                born_token = _find_token_i_in_parse_tree(root, index)
+                print("sent: "+str(sents[i]))
+                print("ents: "+str(ents))
+                print("dep: "+str(dep)+"\n")
+                
+                # 3. Analyze the parents and children of the born node to fill in the BORN template
+                bornee, loc, date = None, None, None
+                # 3a. Find the person or org being born
+                for child in born_token.children:
+                    #if child.dep_ == 'nsubjpass' or child.dep_ == 'nsubj':    # Found the thing being born
+                    print("child: "+str(child.text)+", ent: "+str(child.ent_type_))
+                    if child.ent_type_ == 'PERSON' or child.ent_type_ == 'ORG':   # The thing is a PERSON or ORG
+                        bornee = child.text
+                        print("bornee: " + bornee)
+                        break
+                # 3b. Find their born date
+                if bornee is not None:  # Once a bornee is found, look for their born location and date
+                    for child in born_token.children:
+                        # Look for the preposition of the born location and date
+                        if child.dep_ == 'prep':
+                            for grandchild in child.children:
+                                print("grandchild: "+str(grandchild.text)+", ent: "+str(grandchild.ent_type_))
+                                if grandchild.ent_type_ == 'DATE' and date is None:
+                                    # Found the preposition date
+                                    date = grandchild.text
+                                if (grandchild.ent_type_ == 'LOC' or grandchild.ent_type_ == 'GPE') and date is None:
+                                    # Found the preposition location
+                                    loc = grandchild.text
+                                    
+                if bornee is not None:
+                    res.append((bornee, date, loc))
+                continue
+                
+                bornees, dates, locs = _parse_ents(ents)
+
+                # get all possible ACQUIRE templates
+                if len(bornees) < 1:
+                    # find no entites
+                    continue
+
+                
+                # Get person/org born (assumption: they're the subject of the sentence)
+                if 'nsubj' in dep and lemmas[dep.index('nsubj')] in bornees:
+                    # active
+                    bornee = lemmas[dep.index('nsubj')]
+                elif 'nsubjpass' in dep and lemmas[dep.index('nsubjpass')] in bornees:
+                    # passive
+                    bornee = lemmas[dep.index('nsubjpass')]
+                else:
+                    continue
+                
+                # Get location, if any (assumption: it's the first prepositional object in the sentence)
+                if 'pobj' in dep and lemmas[dep.index('pobj')] in locs:
+                    loc = lemmas[dep.index('pobj')]
+                else:
+                    loc = 'None'
+                    
+                # Get date, if any (assumption: it's the first date in the sentence)
+                if len(dates) >= 1:
+                    date = dates[0]
+                else:
+                    date = 'None'
+                
+                res.append((bornee, loc, date))
+            except Exception as e:
+                #print(e)
+                pass
+        return res
     
     def fill_acquire(self, sents, features):
         res = []
@@ -148,6 +255,7 @@ class NLP(object):
         templates = defaultdict(list)
         # BORN template
         templates['BORN'] = self.fill_born(sents, features)
+        print("Born Template: " + str(templates['BORN']))
             
         # ACQUIRE template
         templates['ACQUIRE'] = self.fill_acquire(sents, features)
