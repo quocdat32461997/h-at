@@ -6,7 +6,6 @@ import json
 from tqdm import tqdm
 
 from nlp import NLP
-from ml import ML
 
 class IE(object):
     """
