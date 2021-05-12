@@ -49,7 +49,7 @@ class NLP(object):
             dep.append([])
             dep_root.append(list(doc.sents)[0].root) # dep_root
             lem.append([])
-            ents.append([(ent.text, ent.label_) for ent in doc.ents])
+            ents.append([(ent.text, ent.start_char, ent.end_char, ent.label_) for ent in doc.ents])
             hypernyms.append([])
             hyponyms.append([])
             meronyms.append([])
@@ -105,6 +105,53 @@ class NLP(object):
                         
                     return bornees, dates, locs
                 
+                def _find_token_i_in_parse_tree(root, search_i):
+                    """
+                    Recursive tree search for value search_i == attribute i of the nodes.
+                    """
+                    if root is None or root.i == search_i:
+                        return root
+                    else:
+                        for child in root.children:
+                            node = _find_token_i_in_parse_tree(child, search_i)
+                            if node is not None and node.i == search_i:
+                                return child
+                        return None
+                
+                # 2. Search for the parse tree node with i = index, the index of the 'bear' lemma previously found
+                born_token = _find_token_i_in_parse_tree(root, index)
+                
+                # 3. Analyze the parents and children of the born node to fill in the BORN template
+                bornee, loc, date = None, None, None
+                # 3a. Find the person or org being born
+                for child in born_token.children:
+                    #if child.dep_ == 'nsubjpass' or child.dep_ == 'nsubj':    # Found the thing being born
+                    if child.ent_type_ == 'PERSON' or child.ent_type_ == 'ORG':   # The thing is a PERSON or ORG
+                        bornee = child.text
+                        break
+                # 3b. Find their born date
+                if bornee is not None:  # Once a bornee is found, look for their born location and date
+                    for child in born_token.children:
+                        # Look for the preposition of the born location and date
+                        if child.dep_ == 'prep':
+                            for grandchild in child.children:
+                                if grandchild.ent_type_ == 'DATE' and date is None:
+                                    # Found the preposition date
+                                    date = grandchild.text
+                                if (grandchild.ent_type_ == 'LOC' or grandchild.ent_type_ == 'GPE') and date is None:
+                                    # Found the preposition location
+                                    loc = grandchild.text
+                                    
+                if bornee is not None:
+                    res.append({
+                        'template' : 'BORN',
+                        'sentences' : sents[i],
+                        'arguments' : {
+                            '1' : bornee,
+                            '2' : date, 
+                            '3' : loc}})
+                continue
+                
                 bornees, dates, locs = _parse_ents(ents)
 
                 # get all possible ACQUIRE templates
@@ -112,6 +159,7 @@ class NLP(object):
                     # find no entites
                     continue
 
+                
                 # Get person/org born (assumption: they're the subject of the sentence)
                 if 'nsubj' in dep and lemmas[dep.index('nsubj')] in bornees:
                     # active
@@ -139,9 +187,10 @@ class NLP(object):
                     'sentences' : sents[i],
                     'arguments' : {
                     '1' : bornee,
-                    '2' : date, 
-                    '3' : loc}})
-            except:
+                    '2' : loc, 
+                    '3' : date}})
+            except Exception as e:
+                #print(e)
                 pass
         return res
     
@@ -229,6 +278,9 @@ class NLP(object):
                     return locs, orgs
 
                 locs, orgs = _parse_ents(ents)
+                #print(lemmas)
+                #print(dep)
+                #print(ents)
 
                 # get all possible ACQUIRE templates
                 if len(locs) < 2 and len(orgs) < 2:
@@ -284,7 +336,6 @@ class NLP(object):
         # PART-OF template
         templates['extractions'].extend(self.fill_part_of(sents, features))
             
-        print(templates)
         return templates
 
     def extract(self, input):
